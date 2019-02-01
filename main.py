@@ -1,11 +1,68 @@
 import cv2
 import numpy as np
+import keras
 from copy import deepcopy
 import argparse
+import os
+from model.cnn import cnn
+from matplotlib import pyplot as plt
+DEFAULT_INPUT_WIDTH = 100
+DEFAULT_INPUT_HEIGHT = 100
+
+
+class AccuracyHistory(keras.callbacks.Callback):
+    def on_train_begin(self, logs={}):
+        self.acc = []
+
+    def on_epoch_end(self, batch, logs={}):
+        self.acc.append(logs.get('acc'))
+
+
+def init_training_data(width: int = DEFAULT_INPUT_WIDTH, height: int = DEFAULT_INPUT_HEIGHT):
+    dir_names = ['data/1_2_5_gr_tails', 'data/1_gr_heads', 'data/1_zl_heads', 'data/2_gr_heads', 'data/2_zl_heads',
+                 'data/2_zl_tails',
+                 'data/5_gr_heads', 'data/5_zl_heads', 'data/5_zl_tails', 'data/10_20_50_1_tails', 'data/10_gr_heads',
+                 'data/20_gr_heads',
+                 'data/50_gr_heads']
+    x_train = None
+    y_train = None
+    for i in range(len(dir_names)):
+        for filename in os.listdir(dir_names[i]):
+            cimg = cv2.imread(os.path.join(dir_names[i], filename), cv2.IMREAD_COLOR)
+            resized_img = cv2.resize(cimg, (int(width), int(height)))
+            if x_train is None:
+                x_train = [resized_img]
+                y_train = np.zeros(shape=(1, len(dir_names)))
+                y_train[0][i] = 1
+            else:
+                x_train.append(resized_img)
+                newRow = np.zeros(shape=(1, len(dir_names)))
+                newRow[0][i] = 1
+                y_train = np.concatenate((y_train, newRow), axis=0)
+            # print('resized_img.shape:', resized_img.shape)
+    x_train = np.array(x_train)
+    # print('x_train:', x_train)
+    # print('y_train:', y_train)
+    print('x_train.shape:', x_train.shape)
+    print('y_train.shape:', y_train.shape)
+    return x_train, y_train
 
 
 if __name__ == '__main__':
+    x_train, y_train = init_training_data()
+    history = AccuracyHistory()
+    model = cnn(x_train[0].shape)
+    model.fit(x_train, y_train,
+              batch_size=5,
+              epochs=10,
+              verbose=1,
+              callbacks=[history])
+    plt.plot(range(10), history.acc)
+    plt.xlabel('Epochs')
+    plt.ylabel('Accuracy')
+    plt.show()
     # Instantiate the parser
+    """
     parser = argparse.ArgumentParser(description='Circle extractor')
     parser.add_argument('--save', action='store_true',
                         help='Save scaled images')
@@ -44,3 +101,4 @@ if __name__ == '__main__':
     cv2.imshow('detected circles', cimg2)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
+    """
