@@ -1,0 +1,30 @@
+from enum import Enum
+
+
+class Coin(Enum):
+    DUMMY = 0
+    ONE_GROSZY = 1
+    TWO_GROSZY = 2
+    FIVE_GROSZY = 5
+    TEN_GROSZY = 10
+    TWENTY_GROSZY = 20
+    FIFTY_GROSZY = 50
+    ONE_ZLOTY = 100
+    TWO_ZLOTY = 200
+    FIVE_ZLOTY = 500
+
+class CoinLabel(Enum):
+    DUMMY = 0
+    ONE_GROSZY_HEAD = 1
+    TWO_GROSZY_HEAD = 2
+    FIVE_GROSZY_HEAD = 3
+    TEN_GROSZY_HEAD = 4
+    TWENTY_GROSZY_HEAD = 5
+    FIFTY_GROSZY_HEAD = 6
+    ONE_ZLOTY_HEAD = 7
+    TWO_ZLOTY_HEAD = 8
+    TWO_ZLOTY_TAIL = 9
+    FIVE_ZLOTY_HEAD = 10
+    FIZE_ZLOTY_TAIL = 11
+    ONE_TWO_FIVE_TAIL = 12
+    TEN_TWENTY_FIFTY_ONE_TAIL = 13
