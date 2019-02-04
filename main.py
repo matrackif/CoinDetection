@@ -14,9 +14,11 @@ from copy import deepcopy
 class AccuracyHistory(keras.callbacks.Callback):
     def on_train_begin(self, logs={}):
         self.acc = []
+        self.val_acc = []
 
     def on_epoch_end(self, batch, logs={}):
         self.acc.append(logs.get('acc'))
+        self.val_acc.append(logs.get('val_acc'))
 
 
 def init_training_data(width: int, height: int, grayscale: bool = True):
@@ -58,8 +60,8 @@ def init_training_data(width: int, height: int, grayscale: bool = True):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('-n', '--epoch-count', nargs='?', type=int, default=60,
-                        const=60, help='Number of epochs to train the CNN')
+    parser.add_argument('-n', '--epoch-count', nargs='?', type=int, default=100,
+                        const=100, help='Number of epochs to train the CNN')
     parser.add_argument('-w', '--img-width', nargs='?', type=int, default=100,
                         const=100, help='All input images will have their width resized to this number')
     parser.add_argument('-ht', '--img-height', nargs='?', type=int, default=100,
@@ -79,8 +81,10 @@ if __name__ == '__main__':
                             verbose=1,
                             callbacks=[acc_history],
                             validation_data=(x_test, y_test))
-    plt.plot(range(args['epoch_count']), acc_history.acc)
+    plt.plot(range(args['epoch_count']), acc_history.acc, label='Training accuracy')
+    plt.plot(range(args['epoch_count']), acc_history.val_acc, label='Test accuracy')
     plt.title('Accuracy of Coin Classifier During Training Epochs')
+    plt.legend()
     plt.xlabel('Epochs')
     plt.ylabel('Accuracy')
     plt.show()
