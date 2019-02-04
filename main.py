@@ -80,13 +80,14 @@ if __name__ == '__main__':
                             callbacks=[acc_history],
                             validation_data=(x_test, y_test))
     plt.plot(range(args['epoch_count']), acc_history.acc)
+    plt.title('Accuracy of Coin Classifier During Training Epochs')
     plt.xlabel('Epochs')
     plt.ylabel('Accuracy')
     plt.show()
     ########
     plt.plot(err_history.history['loss'], label='Training loss (error)')
     plt.plot(err_history.history['val_loss'], label='Test loss (error)')
-    plt.title('Training/test loss of article classifier')
+    plt.title('Training/test loss of coin classifier')
     plt.xlabel('Epoch')
     plt.legend()
     plt.show()
