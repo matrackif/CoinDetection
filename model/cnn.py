@@ -106,7 +106,8 @@ def train_model(args, save_model: bool = False, show_plot: bool = True):
                             verbose=1,
                             callbacks=[acc_history],
                             validation_data=(x_test, y_test))
-    model.save(MODEL_FILENAME)
+    if save_model:
+        model.save(MODEL_FILENAME)
     if show_plot:
         plt.plot(range(args['epoch_count']), acc_history.acc, label='Training accuracy')
         plt.plot(range(args['epoch_count']), acc_history.val_acc, label='Test accuracy')
