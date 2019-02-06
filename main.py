@@ -1,7 +1,7 @@
 import argparse
 import os
 import numpy as np
-from model.model import ModelManager
+from model.model_manager import ModelManager
 
 DEFAULT_EPOCH_COUNT = 100
 DEFAULT_IMAGE_HEIGHT_WIDTH = 150
