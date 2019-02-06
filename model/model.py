@@ -1,0 +1,157 @@
+import keras
+import cv2
+import os
+import model.preprocessing as preprocessing
+import numpy as np
+import model.enums
+from matplotlib import pyplot as plt
+from sklearn.model_selection import StratifiedShuffleSplit
+from sklearn.preprocessing import OneHotEncoder
+from keras.models import Sequential, load_model
+from keras.layers import Dense, Conv2D, Flatten, MaxPooling2D, Dropout, Activation, BatchNormalization
+from typing import Tuple, List
+
+NUM_CLASSES = 13
+MODEL_FILENAME = 'coin_det_model.h5'
+
+
+class AccuracyHistory(keras.callbacks.Callback):
+    def on_train_begin(self, logs={}):
+        self.acc = []
+        self.val_acc = []
+
+    def on_epoch_end(self, batch, logs={}):
+        self.acc.append(logs.get('acc'))
+        self.val_acc.append(logs.get('val_acc'))
+
+
+class ModelManager:
+    def __init__(self, args):
+        self.x_tr, self.x_te = None, None
+        self.y_tr, self.y_te = None, None
+        self.args = args
+        self.model = None
+
+    # TODO make grayscale program argument
+    def init_training_data(self, grayscale: bool = True):
+        dir_names = ['data/1_2_5_gr_tails', 'data/1_gr_heads', 'data/1_zl_heads', 'data/2_gr_heads', 'data/2_zl_heads',
+                     'data/2_zl_tails',
+                     'data/5_gr_heads', 'data/5_zl_heads', 'data/5_zl_tails', 'data/10_20_50_1_tails',
+                     'data/10_gr_heads',
+                     'data/20_gr_heads',
+                     'data/50_gr_heads']
+        x = None
+        y = None
+        sss = StratifiedShuffleSplit(n_splits=1, test_size=0.2, random_state=0)
+        for i in range(len(dir_names)):
+            for filename in os.listdir(dir_names[i]):
+                cimg = cv2.imread(os.path.join(dir_names[i], filename),
+                                  cv2.IMREAD_GRAYSCALE if grayscale else cv2.IMREAD_COLOR)
+                resized_img = cv2.resize(cimg, (int(self.args['img_width']), int(self.args['img_height'])))
+                if x is None:
+                    x = [resized_img]
+                    y = [i]
+                else:
+                    x.append(resized_img)
+                    y.append(i)
+        y = np.array(y).reshape(-1, 1)
+        enc = OneHotEncoder(categories='auto', sparse=False)
+        enc.fit(y)
+        x = np.array(x)
+        x = x[:, :, :, np.newaxis] if grayscale else x
+        x = preprocessing.normalize(x)
+        self.x_tr, self.x_te = None, None
+        self.y_tr, self.y_te = None, None
+        for train_index, test_index in sss.split(x, y):
+            # print("TRAIN indices:", train_index, "TEST indices:", test_index)
+            self.x_tr, self.x_te = x[train_index], x[test_index]
+            self.y_tr, self.y_te = y[train_index], y[test_index]
+            break
+        self.y_tr = enc.transform(self.y_tr)
+        self.y_te = enc.transform(self.y_te)
+
+    def init_cnn(self):
+        self.model = Sequential()
+        self.model.add(Conv2D(256, kernel_size=(5, 5), strides=(1, 1),
+                              input_shape=self.x_tr.shape[1:], data_format='channels_last'))
+        self.model.add(BatchNormalization())
+        self.model.add(Activation('relu'))
+        # model.add(Dropout(0.2))
+        ############
+        self.model.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
+        self.model.add(Conv2D(128, (5, 5)))
+        self.model.add(BatchNormalization())
+        self.model.add(Activation('relu'))
+        # model.add(Dropout(0.2))
+        ############
+        self.model.add(MaxPooling2D(pool_size=(2, 2)))
+        self.model.add(Flatten())
+        self.model.add(Dense(500))
+        self.model.add(BatchNormalization())
+        self.model.add(Activation('relu'))
+        # model.add(Dropout(0.2))
+        ############
+        self.model.add(Dense(250))
+        self.model.add(BatchNormalization())
+        self.model.add(Activation('relu'))
+        self.model.add(Dense(NUM_CLASSES, activation='softmax'))
+        self.model.compile(loss=keras.losses.categorical_crossentropy,
+                           optimizer=keras.optimizers.SGD(lr=0.01),
+                           metrics=['accuracy'])
+
+    def get_model(self, show_plot: bool = True):
+        if self.args['train_model']:
+            self.init_training_data(grayscale=False)
+            print('x_tr.shape:', self.x_tr.shape)
+            print('x_te.shape:', self.x_te.shape)
+            print('y_tr.shape:', self.y_tr.shape)
+            print('y_te.shape:', self.y_te.shape)
+            acc_history = AccuracyHistory()
+            self.init_cnn()
+            err_history = self.model.fit(self.x_tr, self.y_tr,
+                                         batch_size=32,
+                                         epochs=self.args['epoch_count'],
+                                         verbose=1,
+                                         callbacks=[acc_history],
+                                         validation_data=(self.x_te, self.y_te))
+            if self.args['save_model']:
+                self.model.save(MODEL_FILENAME)
+            if show_plot:
+                plt.plot(range(self.args['epoch_count']), acc_history.acc, label='Training accuracy')
+                plt.plot(range(self.args['epoch_count']), acc_history.val_acc, label='Test accuracy')
+                plt.title('Accuracy of Coin Classifier During Training Epochs')
+                plt.legend()
+                plt.xlabel('Epochs')
+                plt.ylabel('Accuracy')
+                plt.show()
+                ########
+                plt.plot(err_history.history['loss'], label='Training loss (error)')
+                plt.plot(err_history.history['val_loss'], label='Test loss (error)')
+                plt.title('Training/test loss of coin classifier')
+                plt.xlabel('Epoch')
+                plt.legend()
+                plt.show()
+            print('Model initialized directly from training')
+        else:
+            try:
+                self.model = load_model(MODEL_FILENAME)
+                print('Model successfully loaded from file')
+            except OSError:
+                print('Failed to load model with name:', MODEL_FILENAME, 'in directory:', os.getcwd())
+
+    def classify_image(self, raw_images_as_arr: np.ndarray):
+        input_width = self.model.layers[0].input_shape[1]
+        input_height = self.model.layers[0].input_shape[2]
+        for i in range(raw_images_as_arr.shape[0]):
+            raw_images_as_arr[i] = cv2.resize(raw_images_as_arr[i], (input_width, input_height))
+
+        raw_images_as_arr = preprocessing.normalize(raw_images_as_arr)
+        pred = self.model.predict(raw_images_as_arr)
+        print(pred, pred.shape)
+        class_indexes = pred.argmax(axis=1)
+        print(class_indexes)
+        print('Classified coins:')
+        for class_idx in class_indexes:
+            print(model.enums.CoinLabel(class_idx + 1))
+
+

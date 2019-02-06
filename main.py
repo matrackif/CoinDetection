@@ -1,7 +1,8 @@
 import argparse
 import os
-from model.cnn import train_model, MODEL_FILENAME
-from keras.models import load_model
+import numpy as np
+from model.model import ModelManager
+
 DEFAULT_EPOCH_COUNT = 100
 DEFAULT_IMAGE_HEIGHT_WIDTH = 150
 
@@ -22,14 +23,8 @@ if __name__ == '__main__':
                         const=DEFAULT_IMAGE_HEIGHT_WIDTH,
                         help='All input images will have their height resized to this number')
     args = vars(parser.parse_args())
-    print('Program arguments:', args)
-    model = None
-    if args['train_model']:
-        model = train_model(args=args, save_model=args['save_model'], show_plot=True)
-    else:
-        try:
-            model = load_model(MODEL_FILENAME)
-        except OSError:
-            print('Failed to load model with name:', MODEL_FILENAME, 'in directory:', os.getcwd())
-        if model is not None:
-            print('Model successfully loaded from file')
+
+    mm = ModelManager(args=args)
+    mm.get_model()
+    mm.classify_image(np.ones(shape=(1, 150, 150, 3)))
+
