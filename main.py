@@ -1,6 +1,8 @@
 import argparse
 import os
 import numpy as np
+import cv2
+import model.preprocessing as preprocessing
 from model.model_manager import ModelManager
 
 DEFAULT_EPOCH_COUNT = 100
@@ -26,5 +28,9 @@ if __name__ == '__main__':
 
     mm = ModelManager(args=args)
     mm.get_model()
+    """
     mm.classify_image(np.ones(shape=(1, 150, 150, 3)))
+    """
+    coin_imgs = preprocessing.hough_transform('data/images_of_multiple_coins/coins.jpg')
+    mm.classify_coin_images(coin_imgs)
 

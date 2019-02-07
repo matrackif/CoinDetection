@@ -22,22 +22,26 @@ def apply_gaussian_filter(img):
     return dst
 
 
-def hough_transform(img, width, height):
+def hough_transform(img_file):
+    img = cv2.imread(img_file, cv2.CV_8UC1)
+    img_color = cv2.imread(img_file, cv2.IMREAD_COLOR)
     ret, dst = cv2.threshold(img, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
     circles = cv2.HoughCircles(dst, cv2.HOUGH_GRADIENT, dp=1, minDist=10, maxRadius=50, param1=50, param2=30,
                                minRadius=10)
     circles = filter_found_cicles((np.around(circles))[0])
-    coins = []
+    # coins = []
     coin_images = []
     for circle in circles:
         x = int(circle[0] - circle[2])
         y = int(circle[1] - circle[2])
         local_height = int(2 * circle[2])
         local_width = int(2 * circle[2])
-        coin_found = img[y:y + local_height, x:x + local_width]
-        coins.append(cv2.resize(coin_found, (width, height)))
-        coin_images.append(ci.CoinImage(int(circle[2])))
-    return coins, coin_images
+        coin_found = img_color[y:y + local_height, x:x + local_width]
+        # cv2.imshow('lol', coin_found)
+        # cv2.waitKey(0)
+        # coins.append(cv2.resize(coin_found, (width, height)))
+        coin_images.append(ci.CoinImage(radius=int(circle[2]), img_arr=coin_found))
+    return coin_images
 
 
 def filter_found_cicles(circles):

@@ -10,7 +10,7 @@ from sklearn.preprocessing import OneHotEncoder
 from keras.models import Sequential, load_model
 from keras.layers import Dense, Conv2D, Flatten, MaxPooling2D, Dropout, Activation, BatchNormalization
 from typing import Tuple, List
-
+from model.coin_image import CoinImage
 NUM_CLASSES = 13
 MODEL_FILENAME = 'coin_det_model.h5'
 
@@ -140,18 +140,36 @@ class ModelManager:
                 print('Failed to load model with name:', MODEL_FILENAME, 'in directory:', os.getcwd())
 
     def classify_image(self, raw_images_as_arr: np.ndarray):
+        if self.model is not None:
+            input_width = self.model.layers[0].input_shape[1]
+            input_height = self.model.layers[0].input_shape[2]
+            for i in range(raw_images_as_arr.shape[0]):
+                raw_images_as_arr[i] = cv2.resize(raw_images_as_arr[i], (input_width, input_height))
+
+            raw_images_as_arr = preprocessing.normalize(raw_images_as_arr)
+            pred = self.model.predict(raw_images_as_arr)
+            print(pred, pred.shape)
+            class_indexes = pred.argmax(axis=1)
+            print(class_indexes)
+            print('Classified coins:')
+            for class_idx in class_indexes:
+                print(model.enums.CoinLabel(class_idx + 1))
+
+    def classify_coin_images(self, coin_images: List[CoinImage]):
         input_width = self.model.layers[0].input_shape[1]
         input_height = self.model.layers[0].input_shape[2]
-        for i in range(raw_images_as_arr.shape[0]):
-            raw_images_as_arr[i] = cv2.resize(raw_images_as_arr[i], (input_width, input_height))
-
-        raw_images_as_arr = preprocessing.normalize(raw_images_as_arr)
-        pred = self.model.predict(raw_images_as_arr)
-        print(pred, pred.shape)
-        class_indexes = pred.argmax(axis=1)
-        print(class_indexes)
         print('Classified coins:')
-        for class_idx in class_indexes:
-            print(model.enums.CoinLabel(class_idx + 1))
+        for i in range(len(coin_images)):
+            coin_images[i].img_arr = cv2.resize(coin_images[i].img_arr, (input_width, input_height))
+            coin_images[i].img_arr = preprocessing.normalize(coin_images[i].img_arr)
+            cv2.imshow('lol', coin_images[i].img_arr)
+            cv2.waitKey(0)
+            coin_images[i].img_arr = coin_images[i].img_arr[np.newaxis, :, :, :]
+            pred = self.model.predict(coin_images[i].img_arr)
+            class_indexes = pred.argmax(axis=1)
+            for class_idx in class_indexes:
+                print(model.enums.CoinLabel(class_idx + 1))
+
+
 
 
