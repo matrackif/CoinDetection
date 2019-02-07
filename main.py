@@ -5,7 +5,8 @@ import cv2
 import model.preprocessing as preprocessing
 import model.postprocessing as postprocessing
 from model.model_manager import ModelManager
-
+from scikitplot.metrics import plot_confusion_matrix
+from matplotlib import pyplot as plt
 DEFAULT_EPOCH_COUNT = 100
 DEFAULT_IMAGE_HEIGHT_WIDTH = 150
 
@@ -42,3 +43,17 @@ if __name__ == '__main__':
     print('Total coin value in zł:')
     print(postprocessing.get_total_count(coin_imgs))
 
+    if not args['train_model']:
+        mm.init_training_data(grayscale=False)
+    y_te_pred = mm.model.predict(mm.x_te)
+    y_actual = mm.y_te.argmax(axis=1).flatten().tolist()
+    y_te_pred = y_te_pred.argmax(axis=1).flatten().tolist()
+    # I'm sure there is a more elegant way
+    classes = ['1,2,5gr tail', '1gr head', '1zl head', '2gr head', '2zl head', '2zl tail', '5gr head', '5zl head', '5zl tail', '10,20,50gr,1zl tail', '10gr head', '20gr head', '50gr head']
+    for i in range(len(y_actual)):
+        y_actual[i] = classes[y_actual[i]]
+        y_te_pred[i] = classes[y_te_pred[i]]
+
+    axes = plot_confusion_matrix(y_actual, y_te_pred)
+    plt.setp(axes.get_xticklabels(), rotation=30, horizontalalignment='right')
+    plt.show()

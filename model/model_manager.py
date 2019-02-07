@@ -148,10 +148,10 @@ class ModelManager:
 
             raw_images_as_arr = preprocessing.normalize(raw_images_as_arr)
             pred = self.model.predict(raw_images_as_arr)
-            print(pred, pred.shape)
+            # print(pred, pred.shape)
             class_indexes = pred.argmax(axis=1)
-            print(class_indexes)
-            print('Classified coins:')
+            # print(class_indexes)
+            # print('Classified coins:')
             for class_idx in class_indexes:
                 print(model.enums.CoinLabel(class_idx + 1))
 
