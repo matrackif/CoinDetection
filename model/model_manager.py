@@ -162,14 +162,13 @@ class ModelManager:
         for i in range(len(coin_images)):
             coin_images[i].img_arr = cv2.resize(coin_images[i].img_arr, (input_width, input_height))
             coin_images[i].img_arr = preprocessing.normalize(coin_images[i].img_arr)
-            cv2.imshow('lol', coin_images[i].img_arr)
-            cv2.waitKey(0)
+            if self.args['show_images']:
+                cv2.imshow('Image of Detected Coin From Hough Transform', coin_images[i].img_arr)
+                cv2.waitKey(0)
             coin_images[i].img_arr = coin_images[i].img_arr[np.newaxis, :, :, :]
             pred = self.model.predict(coin_images[i].img_arr)
             class_indexes = pred.argmax(axis=1)
             for class_idx in class_indexes:
-                print(model.enums.CoinLabel(class_idx + 1))
-
-
-
-
+                coin_label_val = model.enums.CoinLabel(class_idx + 1)
+                coin_images[i].label = coin_label_val
+                print('Detected coin with label:', coin_label_val)
