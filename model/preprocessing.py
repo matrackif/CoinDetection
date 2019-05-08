@@ -29,7 +29,7 @@ def hough_transform(img_file: str, greyscale: bool = False):
     else:
         output_img = cv2.imread(img_file, cv2.IMREAD_COLOR)
     ret, dst = cv2.threshold(img, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-    circles = cv2.HoughCircles(dst, cv2.HOUGH_GRADIENT, dp=1, minDist=10, maxRadius=50, param1=50, param2=30,
+    circles = cv2.HoughCircles(dst, cv2.HOUGH_GRADIENT, dp=1, minDist=10, maxRadius=300, param1=50, param2=30,
                                minRadius=10)
     circles = filter_found_cicles((np.around(circles))[0])
     # coins = []
