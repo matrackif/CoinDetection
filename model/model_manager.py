@@ -74,26 +74,27 @@ class ModelManager:
         self.model = Sequential()
         self.model.add(Conv2D(16, kernel_size=(3, 3), strides=(1, 1),
                               input_shape=self.x_tr.shape[1:], data_format='channels_last'))
-        # self.model.add(BatchNormalization())
         self.model.add(Activation('relu'))
-        self.model.add(Dropout(0.2))
+        self.model.add(BatchNormalization())
+        # self.model.add(Dropout(0.2))
         ############
         # self.model.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
         self.model.add(Conv2D(32, kernel_size=(3, 3)))
-        # self.model.add(BatchNormalization())
         self.model.add(Activation('relu'))
-        self.model.add(Dropout(0.2))
+        self.model.add(BatchNormalization())
+        # self.model.add(Dropout(0.2))
         ############
         self.model.add(MaxPooling2D(pool_size=(2, 2)))
         self.model.add(Flatten())
         self.model.add(Dense(32))
-        # self.model.add(BatchNormalization())
         self.model.add(Activation('relu'))
-        self.model.add(Dropout(0.2))
-        ############
-        self.model.add(Dense(16))
         self.model.add(BatchNormalization())
-        self.model.add(Activation('relu'))
+        # self.model.add(Dropout(0.2))
+        ############
+        # self.model.add(Dense(16))
+        # self.model.add(BatchNormalization())
+        # self.model.add(Activation('relu'))
+        # self.model.add(Dropout(0.2))
         self.model.add(Dense(NUM_CLASSES, activation='softmax'))
         self.model.compile(loss=keras.losses.categorical_crossentropy,
                            optimizer=keras.optimizers.SGD(lr=0.01),
