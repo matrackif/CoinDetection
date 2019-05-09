@@ -72,26 +72,26 @@ class ModelManager:
 
     def init_cnn(self):
         self.model = Sequential()
-        self.model.add(Conv2D(256, kernel_size=(5, 5), strides=(1, 1),
+        self.model.add(Conv2D(16, kernel_size=(3, 3), strides=(1, 1),
                               input_shape=self.x_tr.shape[1:], data_format='channels_last'))
-        self.model.add(BatchNormalization())
+        # self.model.add(BatchNormalization())
         self.model.add(Activation('relu'))
-        # model.add(Dropout(0.2))
+        self.model.add(Dropout(0.2))
         ############
-        self.model.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
-        self.model.add(Conv2D(128, (5, 5)))
-        self.model.add(BatchNormalization())
+        # self.model.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
+        self.model.add(Conv2D(32, kernel_size=(3, 3)))
+        # self.model.add(BatchNormalization())
         self.model.add(Activation('relu'))
-        # model.add(Dropout(0.2))
+        self.model.add(Dropout(0.2))
         ############
         self.model.add(MaxPooling2D(pool_size=(2, 2)))
         self.model.add(Flatten())
-        self.model.add(Dense(500))
-        self.model.add(BatchNormalization())
+        self.model.add(Dense(32))
+        # self.model.add(BatchNormalization())
         self.model.add(Activation('relu'))
-        # model.add(Dropout(0.2))
+        self.model.add(Dropout(0.2))
         ############
-        self.model.add(Dense(250))
+        self.model.add(Dense(16))
         self.model.add(BatchNormalization())
         self.model.add(Activation('relu'))
         self.model.add(Dense(NUM_CLASSES, activation='softmax'))
