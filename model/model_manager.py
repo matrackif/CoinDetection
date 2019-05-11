@@ -11,8 +11,8 @@ from keras.models import Sequential, load_model
 from keras.layers import Dense, Conv2D, Flatten, MaxPooling2D, Dropout, Activation, BatchNormalization
 from typing import Tuple, List
 from model.coin_image import CoinImage
+from pathlib import Path
 NUM_CLASSES = 13
-MODEL_FILENAME = 'coin_det_model.h5'
 
 
 class AccuracyHistory(keras.callbacks.Callback):
@@ -33,7 +33,7 @@ class ModelManager:
         self.model = None
 
     # TODO make grayscale program argument
-    def init_training_data(self, grayscale: bool = True):
+    def init_training_data(self):
         dir_names = ['data/1_2_5_gr_tails', 'data/1_gr_heads', 'data/1_zl_heads', 'data/2_gr_heads', 'data/2_zl_heads',
                      'data/2_zl_tails',
                      'data/5_gr_heads', 'data/5_zl_heads', 'data/5_zl_tails', 'data/10_20_50_1_tails',
@@ -46,7 +46,7 @@ class ModelManager:
         for i in range(len(dir_names)):
             for filename in os.listdir(dir_names[i]):
                 cimg = cv2.imread(os.path.join(dir_names[i], filename),
-                                  cv2.IMREAD_GRAYSCALE if grayscale else cv2.IMREAD_COLOR)
+                                  cv2.IMREAD_GRAYSCALE if self.args['greyscale'] else cv2.IMREAD_COLOR)
                 resized_img = cv2.resize(cimg, (int(self.args['img_width']), int(self.args['img_height'])))
                 if x is None:
                     x = [resized_img]
@@ -58,7 +58,7 @@ class ModelManager:
         enc = OneHotEncoder(categories='auto', sparse=False)
         enc.fit(y)
         x = np.array(x)
-        x = x[:, :, :, np.newaxis] if grayscale else x
+        x = x[:, :, :, np.newaxis] if self.args['greyscale'] else x
         x = preprocessing.normalize(x)
         self.x_tr, self.x_te = None, None
         self.y_tr, self.y_te = None, None
@@ -99,10 +99,11 @@ class ModelManager:
         self.model.compile(loss=keras.losses.categorical_crossentropy,
                            optimizer=keras.optimizers.SGD(lr=0.01),
                            metrics=['accuracy'])
+        self.model.summary()
 
     def get_model(self, show_plot: bool = True):
         if self.args['train_model']:
-            self.init_training_data(grayscale=False)
+            self.init_training_data()
             print('x_tr.shape:', self.x_tr.shape)
             print('x_te.shape:', self.x_te.shape)
             print('y_tr.shape:', self.y_tr.shape)
@@ -116,7 +117,17 @@ class ModelManager:
                                          callbacks=[acc_history],
                                          validation_data=(self.x_te, self.y_te))
             if self.args['save_model']:
-                self.model.save(MODEL_FILENAME)
+                model_path = Path(self.args['model_file'])
+                model_file_name = model_path.name
+                if model_path.is_file():
+                    print('Model file:', model_path.name, 'already exists.')
+                    res = input('Overwrite file name? (y/n). If no then model will be saved with name: new_' + model_file_name)
+                    if res.lower() == 'y' or res.lower() == 'yes':
+                        pass
+                    else:
+                        model_file_name = 'new_' + model_file_name
+                print('Saving model to file with name:', model_file_name)
+                self.model.save(model_file_name)
             if show_plot:
                 plt.plot(range(self.args['epoch_count']), acc_history.acc, label='Training accuracy')
                 plt.plot(range(self.args['epoch_count']), acc_history.val_acc, label='Test accuracy')
@@ -135,10 +146,10 @@ class ModelManager:
             print('Model initialized directly from training')
         else:
             try:
-                self.model = load_model(MODEL_FILENAME)
+                self.model = load_model(self.args['model_file'])
                 print('Model successfully loaded from file')
             except OSError:
-                print('Failed to load model with name:', MODEL_FILENAME, 'in directory:', os.getcwd())
+                print('Failed to load model with name:', self.args['model_file'], 'in directory:', os.getcwd())
 
     def classify_image(self, raw_images_as_arr: np.ndarray):
         if self.model is not None:
@@ -159,6 +170,15 @@ class ModelManager:
     def classify_coin_images(self, coin_images: List[CoinImage]):
         input_width = self.model.layers[0].input_shape[1]
         input_height = self.model.layers[0].input_shape[2]
+        model_is_greyscale = True
+        if self.model.layers[0].input_shape[3] == 3:
+            model_is_greyscale = False
+        if model_is_greyscale and not self.args['greyscale']:
+            print('Error: Model was trained on greyscale images, it cannot predict value of color images')
+            return
+        elif not model_is_greyscale and self.args['greyscale']:
+            print('Error: Model was trained on color images, it cannot predict value of greyscale images')
+            return
         print('Classified coins:')
         for i in range(len(coin_images)):
             coin_images[i].img_arr = cv2.resize(coin_images[i].img_arr, (input_width, input_height))
@@ -166,8 +186,12 @@ class ModelManager:
             if self.args['show_images']:
                 cv2.imshow('Image of Detected Coin From Hough Transform', coin_images[i].img_arr)
                 cv2.waitKey(0)
-            coin_images[i].img_arr = coin_images[i].img_arr[np.newaxis, :, :, :]
+            if self.args['greyscale'] and len(coin_images[i].img_arr) != 4:
+                coin_images[i].img_arr = coin_images[i].img_arr.reshape((1, self.args['img_width'], self.args['img_height'], 1))
+            elif not self.args['greyscale'] and len(coin_images[i].img_arr) != 4:
+                coin_images[i].img_arr = coin_images[i].img_arr.reshape((1, self.args['img_width'], self.args['img_height'], 3))
             pred = self.model.predict(coin_images[i].img_arr)
+
             class_indexes = pred.argmax(axis=1)
             for class_idx in class_indexes:
                 coin_label_val = model.enums.CoinLabel(class_idx + 1)
