@@ -34,12 +34,12 @@ class ModelManager:
 
     # TODO make grayscale program argument
     def init_training_data(self):
-        dir_names = ['data/1_2_5_gr_tails', 'data/1_gr_heads', 'data/1_zl_heads', 'data/2_gr_heads', 'data/2_zl_heads',
-                     'data/2_zl_tails',
-                     'data/5_gr_heads', 'data/5_zl_heads', 'data/5_zl_tails', 'data/10_20_50_1_tails',
-                     'data/10_gr_heads',
-                     'data/20_gr_heads',
-                     'data/50_gr_heads']
+        dir_names = ['data/1_2_5_gr_tails/output', 'data/1_gr_heads/output', 'data/1_zl_heads/output', 'data/2_gr_heads/output', 'data/2_zl_heads/output',
+                     'data/2_zl_tails/output',
+                     'data/5_gr_heads/output', 'data/5_zl_heads/output', 'data/5_zl_tails/output', 'data/10_20_50_1_tails/output',
+                     'data/10_gr_heads/output',
+                     'data/20_gr_heads/output',
+                     'data/50_gr_heads/output']
         x = None
         y = None
         sss = StratifiedShuffleSplit(n_splits=1, test_size=0.2, random_state=0)
