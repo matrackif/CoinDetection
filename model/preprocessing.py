@@ -23,14 +23,18 @@ def apply_gaussian_filter(img):
 
 
 def hough_transform(img_file: str, greyscale: bool = False):
-    img = cv2.imread(img_file, cv2.CV_8UC1)
     if greyscale:
         output_img = cv2.imread(img_file, cv2.IMREAD_GRAYSCALE)
     else:
         output_img = cv2.imread(img_file, cv2.IMREAD_COLOR)
-    ret, dst = cv2.threshold(img, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-    circles = cv2.HoughCircles(dst, cv2.HOUGH_GRADIENT, dp=1, minDist=10, maxRadius=300, param1=50, param2=30,
-                               minRadius=10)
+    mask = coin_color_mask(output_img)
+    only_coins = cv2.bitwise_and(output_img,output_img,mask=mask)
+
+    grayscale_only_coins = cv2.cvtColor(only_coins, cv2.COLOR_BGR2GRAY)
+    circles = cv2.HoughCircles(
+        grayscale_only_coins, cv2.HOUGH_GRADIENT,
+        dp=1, minDist=10, minRadius=10, maxRadius=300,
+        param1=50, param2=30)
     circles = filter_found_cicles((np.around(circles))[0])
     # coins = []
     coin_images = []
@@ -45,6 +49,45 @@ def hough_transform(img_file: str, greyscale: bool = False):
         # coins.append(cv2.resize(coin_found, (width, height)))
         coin_images.append(ci.CoinImage(radius=int(circle[2]), img_arr=coin_found))
     return coin_images
+
+
+def coin_color_mask(img):
+    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+
+    # Detects the yellow and brown colors in coins.
+    coin_yellow_mask = cv2.inRange(
+        hsv,
+        np.array([int(30/2), int(0.25*255), 0]),
+        np.array([int(60/2), 255, 255]))
+
+    # Detects the gray color in coins.
+    coin_gray_mask = cv2.inRange(
+        hsv,
+        np.array([int(15/2), int(0.45*255), 0]),
+        np.array([int(30/2), 255, 255]))
+
+    # Detects the gray color in the ideal coin image.
+    coin_ideal_gray_mask = cv2.inRange(
+        hsv,
+        np.array([int(45/2), 0, 0]),
+        np.array([int(170/2), 255, 255]))
+
+    # Detects the almost-white gray color in the ideal coin image.
+    coin_ideal_bright_gray_mask = cv2.inRange(
+        hsv,
+        np.array([int(20/2), int(0.03*255), 0]),
+        np.array([int(65/2), int(0.05*255), 255]))
+
+    mask = (
+        coin_yellow_mask +
+        coin_gray_mask +
+        coin_ideal_gray_mask +
+        coin_ideal_bright_gray_mask)
+
+    # mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, np.ones((3,3),np.uint8))
+    # mask = cv2.morphologyEx(mask, cv2.MORPH_DILATE, np.ones((3,3),np.uint8))
+
+    return mask
 
 
 def filter_found_cicles(circles):
