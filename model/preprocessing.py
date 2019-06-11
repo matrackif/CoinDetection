@@ -29,6 +29,7 @@ def hough_transform(img_file: str, greyscale: bool = False):
     _, contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
     coins_with_contours = only_coins.copy()
     cv2.drawContours(coins_with_contours, contours, -1, (0,0,255), 3)
+    showdebug("Image after color detection + contours", coins_with_contours)
     cv2.waitKey(0)
 
     min_radius = 10
