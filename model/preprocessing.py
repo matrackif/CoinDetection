@@ -60,28 +60,24 @@ def coin_color_mask(img):
         hsv,
         np.array([int(30/2), int(0.25*255), 0]),
         np.array([int(60/2), 255, 255]))
-    showdebug("coin yellow mask", coin_yellow_mask)
 
     # Detects the gray color in coins.
     coin_gray_mask = cv2.inRange(
         hsv,
         np.array([int(15/2), int(0.45*255), 0]),
         np.array([int(30/2), 255, 255]))
-    showdebug("coin gray mask", coin_gray_mask)
 
     # Detects the gray color in the ideal coin image.
     coin_ideal_gray_mask = cv2.inRange(
         hsv,
         np.array([int(45/2), 0, 0]),
         np.array([int(170/2), 255, 255]))
-    showdebug("coin ideal gray mask", coin_ideal_gray_mask)
 
     # Detects the almost-white gray color in the ideal coin image.
     coin_ideal_bright_gray_mask = cv2.inRange(
         hsv,
         np.array([int(20/2), int(0.03*255), 0]),
         np.array([int(65/2), int(0.05*255), 255]))
-    showdebug("coin ideal bright gray mask", coin_ideal_bright_gray_mask)
 
     mask = (
         coin_yellow_mask +
