@@ -44,6 +44,8 @@ def hough_transform(img_file: str, greyscale: bool = False):
         if radius < min_radius:
             continue
         coin_found = output_img[miny:maxy, minx:maxx]
+        cv2.imshow('coin', coin_found)
+        cv2.waitKey(0)
         # coins.append(cv2.resize(coin_found, (width, height)))
         coin_images.append(ci.CoinImage(radius=int(radius), img_arr=coin_found))
     return coin_images
