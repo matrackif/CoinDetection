@@ -17,14 +17,15 @@ def normalize(x_data: np.ndarray):
 
 
 def hough_transform(img_file: str, greyscale: bool = False):
+    color_img = cv2.imread(img_file, cv2.IMREAD_COLOR)
     if greyscale:
         output_img = cv2.imread(img_file, cv2.IMREAD_GRAYSCALE)
     else:
-        output_img = cv2.imread(img_file, cv2.IMREAD_COLOR)
-    showdebug("Original image", output_img)
-    mask = coin_color_mask(output_img)
+        output_img = color_img
+    showdebug("Original image", color_img)
+    mask = coin_color_mask(color_img)
     showdebug("Merged mask", mask)
-    only_coins = cv2.bitwise_and(output_img,output_img,mask=mask)
+    only_coins = cv2.bitwise_and(color_img,color_img,mask=mask)
 
     _, contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
     coins_with_contours = only_coins.copy()
