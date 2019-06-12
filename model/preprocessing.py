@@ -22,16 +22,12 @@ def hough_transform(img_file: str, greyscale: bool = False):
         output_img = cv2.imread(img_file, cv2.IMREAD_GRAYSCALE)
     else:
         output_img = color_img
-    showdebug("Original image", color_img)
     mask = coin_color_mask(color_img)
-    showdebug("Merged mask", mask)
     only_coins = cv2.bitwise_and(color_img,color_img,mask=mask)
 
     _, contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
     coins_with_contours = only_coins.copy()
     cv2.drawContours(coins_with_contours, contours, -1, (0,0,255), 3)
-    showdebug("Image after color detection + contours", coins_with_contours)
-    cv2.waitKey(0)
 
     min_radius = 10
     coin_images = []
@@ -45,8 +41,6 @@ def hough_transform(img_file: str, greyscale: bool = False):
         if radius < min_radius:
             continue
         coin_found = output_img[miny:maxy, minx:maxx]
-        cv2.imshow('coin', coin_found)
-        cv2.waitKey(0)
         # coins.append(cv2.resize(coin_found, (width, height)))
         coin_images.append(ci.CoinImage(radius=int(radius), img_arr=coin_found))
     return coin_images
