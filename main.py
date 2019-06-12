@@ -6,8 +6,6 @@ import model.preprocessing as preprocessing
 import model.postprocessing as postprocessing
 from model.coin_image import CoinImage
 from model.model_manager import ModelManager
-from scikitplot.metrics import plot_confusion_matrix
-from matplotlib import pyplot as plt
 from glob import glob
 from pathlib import Path
 DEFAULT_EPOCH_COUNT = 100

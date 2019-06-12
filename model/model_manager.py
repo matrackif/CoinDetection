@@ -4,7 +4,6 @@ import os
 import model.preprocessing as preprocessing
 import numpy as np
 import model.enums
-from matplotlib import pyplot as plt
 from sklearn.model_selection import StratifiedShuffleSplit
 from sklearn.preprocessing import OneHotEncoder
 from keras.models import Sequential, load_model
@@ -128,19 +127,6 @@ class ModelManager:
                         model_file_name = 'new_' + model_file_name
                 print('Saving model to file with name:', model_file_name)
                 self.model.save(model_file_name)
-            if show_plot:
-                plt.plot(range(self.args['epoch_count']), acc_history.acc, label='Training accuracy')
-                plt.plot(range(self.args['epoch_count']), acc_history.val_acc, label='Test accuracy')
-                plt.title('Accuracy of Coin Classifier During Training Epochs')
-                plt.legend()
-                plt.xlabel('Epochs')
-                plt.ylabel('Accuracy')
-                ########
-                plt.plot(err_history.history['loss'], label='Training loss (error)')
-                plt.plot(err_history.history['val_loss'], label='Test loss (error)')
-                plt.title('Training/test loss of coin classifier')
-                plt.xlabel('Epoch')
-                plt.legend()
             print('Model initialized directly from training')
         else:
             try:
