@@ -31,7 +31,7 @@ if __name__ == '__main__':
     
     """
     parser = argparse.ArgumentParser()
-    parser.add_argument('-t', '--train-model', action='store_true', default=False,
+    parser.add_argument('-t', '--train-model', action='store_true', default=True,
                             help='Train Keras baseline model')
     parser.add_argument('-s', '--save-model', action='store_true', default=False,
                         help='Save trained model, if -t is not passed then this argument is ignored')
@@ -56,6 +56,8 @@ if __name__ == '__main__':
                         help='Directory of coins to be classified')
     parser.add_argument('-g', '--greyscale', action='store_true', default=False,
                         help='Classify or train on greyscale images, if False then use RGB color scheme')
+    parser.add_argument('-m', '--model-name', nargs='?', type=str, default='base',
+                        help='Provide the name of trained model. Possible values: base, lenet, stridenet')
     args = vars(parser.parse_args())
 
     mm = ModelManager(args=args)

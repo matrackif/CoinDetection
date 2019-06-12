@@ -2,6 +2,9 @@ import keras
 import cv2
 import os
 import model.preprocessing as preprocessing
+import model.base_model as base
+import model.lenet_model as lenet
+import model.stridenet_model as stridenet
 import numpy as np
 import model.enums
 from sklearn.model_selection import StratifiedShuffleSplit
@@ -70,35 +73,13 @@ class ModelManager:
         self.y_te = enc.transform(self.y_te)
 
     def init_cnn(self):
-        self.model = Sequential()
-        self.model.add(Conv2D(16, kernel_size=(3, 3), strides=(1, 1),
-                              input_shape=self.x_tr.shape[1:], data_format='channels_last'))
-        self.model.add(Activation('relu'))
-        self.model.add(BatchNormalization())
-        # self.model.add(Dropout(0.2))
-        ############
-        # self.model.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
-        self.model.add(Conv2D(32, kernel_size=(3, 3)))
-        self.model.add(Activation('relu'))
-        self.model.add(BatchNormalization())
-        # self.model.add(Dropout(0.2))
-        ############
-        self.model.add(MaxPooling2D(pool_size=(2, 2)))
-        self.model.add(Flatten())
-        self.model.add(Dense(32))
-        self.model.add(Activation('relu'))
-        self.model.add(BatchNormalization())
-        # self.model.add(Dropout(0.2))
-        ############
-        # self.model.add(Dense(16))
-        # self.model.add(BatchNormalization())
-        # self.model.add(Activation('relu'))
-        # self.model.add(Dropout(0.2))
-        self.model.add(Dense(NUM_CLASSES, activation='softmax'))
-        self.model.compile(loss=keras.losses.categorical_crossentropy,
-                           optimizer=keras.optimizers.SGD(lr=0.01),
-                           metrics=['accuracy'])
-        self.model.summary()
+        possible_models = {
+            'base': base.BaseModel(self.x_tr.shape[1:], NUM_CLASSES),
+            'lenet': lenet.LeNetModel(self.x_tr.shape[1:], NUM_CLASSES),
+            'stridenet': stridenet.StrideNetModel(self.x_tr.shape[1:], NUM_CLASSES)
+        }
+        self.model = possible_models[self.args['model_name']].model
+
 
     def get_model(self, show_plot: bool = True):
         if self.args['train_model']:
