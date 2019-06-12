@@ -11,6 +11,7 @@ from sklearn.model_selection import StratifiedShuffleSplit
 from sklearn.preprocessing import OneHotEncoder
 from keras.models import Sequential, load_model
 from keras.layers import Dense, Conv2D, Flatten, MaxPooling2D, Dropout, Activation, BatchNormalization
+import tensorflow as tf
 from typing import Tuple, List
 from model.coin_image import CoinImage
 from pathlib import Path
@@ -79,6 +80,11 @@ class ModelManager:
             'stridenet': stridenet.StrideNetModel(self.x_tr.shape[1:], NUM_CLASSES)
         }
         self.model = possible_models[self.args['model_name']].model
+        self.model = tf.contrib.tpu.keras_to_tpu_model(
+            model,
+            strategy=tf.contrib.tpu.TPUDistributionStrategy(
+                tf.contrib.cluster_resolver.TPUClusterResolver(
+                    tpu='grpc://' + os.environ['COLAB_TPU_ADDR'])))
 
 
     def get_model(self, show_plot: bool = True):
