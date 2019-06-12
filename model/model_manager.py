@@ -135,14 +135,12 @@ class ModelManager:
                 plt.legend()
                 plt.xlabel('Epochs')
                 plt.ylabel('Accuracy')
-                plt.show()
                 ########
                 plt.plot(err_history.history['loss'], label='Training loss (error)')
                 plt.plot(err_history.history['val_loss'], label='Test loss (error)')
                 plt.title('Training/test loss of coin classifier')
                 plt.xlabel('Epoch')
                 plt.legend()
-                plt.show()
             print('Model initialized directly from training')
         else:
             try:
