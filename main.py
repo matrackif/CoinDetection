@@ -28,12 +28,14 @@ if __name__ == '__main__':
     Train color image model and save it:
     main.py -t -s -n 6
     
-    Classify using color model:
+    Classify using base model:
     main.py -f -d -show
     
+    Classify using lenet model:
+    main.py -f "data/images_of_multiple_coins/t1.jpg" -show -mfn "lenet_model.h5" 
     """
     parser = argparse.ArgumentParser()
-    parser.add_argument('-t', '--train-model', action='store_true', default=True,
+    parser.add_argument('-t', '--train-model', action='store_true', default=False,
                             help='Train Keras baseline model')
     parser.add_argument('-s', '--save-model', action='store_true', default=False,
                         help='Save trained model, if -t is not passed then this argument is ignored')

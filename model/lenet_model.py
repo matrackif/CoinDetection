@@ -20,6 +20,7 @@ class LeNetModel(base.BaseModel):
                              activation="tanh"))
         self.model.add(BatchNormalization())
         self.model.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
+        self.model.add(Flatten())
         self.model.add(Dense(256))
         self.model.add(BatchNormalization())
         self.model.add(Activation('tanh'))

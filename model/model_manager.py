@@ -35,7 +35,6 @@ class ModelManager:
         self.args = args
         self.model = None
 
-    # TODO make grayscale program argument
     def init_training_data(self):
         dir_names = ['data/1_2_5_gr_tails/output', 'data/1_gr_heads/output', 'data/1_zl_heads/output', 'data/2_gr_heads/output', 'data/2_zl_heads/output',
                      'data/2_zl_tails/output',
@@ -80,7 +79,7 @@ class ModelManager:
             'stridenet': stridenet.StrideNetModel(self.x_tr.shape[1:], NUM_CLASSES)
         }
         self.model = possible_models[self.args['model_name']].model
-
+        self.model.summary()
 
     def get_model(self, show_plot: bool = True):
         if self.args['train_model']:
