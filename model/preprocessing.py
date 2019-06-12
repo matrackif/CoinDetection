@@ -4,6 +4,12 @@ import model.coin_image as ci
 
 
 def normalize(x_data: np.ndarray):
+    lab = cv2.cvtColor(x_data, cv2.COLOR_BGR2LAB)
+    clahe = cv2.createCLAHE(clipLimit=4.0, tileGridSize=(8,8))
+    histogram_equalized = clahe.apply(lab[:, :, 0])
+    lab[:, :, 0] = histogram_equalized
+    x_data = cv2.cvtColor(lab, cv2.COLOR_LAB2BGR)
+
     tmp = x_data.astype(np.float64)
     tmp /= 255.0  # scale between 0 and 1
     """
