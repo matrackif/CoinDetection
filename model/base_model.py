@@ -1,6 +1,6 @@
 import keras
-from keras.models import Sequential
 from keras.layers import Dense, Conv2D, Flatten, MaxPooling2D, Activation, BatchNormalization
+from keras.models import Sequential
 
 
 class BaseModel:

@@ -1,19 +1,18 @@
 import argparse
 import os
-import numpy as np
-import cv2
-import model.preprocessing as preprocessing
-import model.postprocessing as postprocessing
-from model.coin_image import CoinImage
-from model.model_manager import ModelManager
-from scikitplot.metrics import plot_confusion_matrix
-from matplotlib import pyplot as plt
 from glob import glob
 from pathlib import Path
+
+import cv2
+
+import model.postprocessing as postprocessing
+import model.preprocessing as preprocessing
+from model.coin_image import CoinImage
+from model.model_manager import ModelManager
+
 DEFAULT_EPOCH_COUNT = 100
 DEFAULT_IMAGE_HEIGHT_WIDTH = 100
 DEFAULT_MODEL_FILENAME = 'coin_det_model.h5'
-
 
 if __name__ == '__main__':
     """
@@ -36,7 +35,7 @@ if __name__ == '__main__':
     """
     parser = argparse.ArgumentParser()
     parser.add_argument('-t', '--train-model', action='store_true', default=False,
-                            help='Train Keras baseline model')
+                        help='Train Keras baseline model')
     parser.add_argument('-s', '--save-model', action='store_true', default=False,
                         help='Save trained model, if -t is not passed then this argument is ignored')
     parser.add_argument('-show', '--show-images', action='store_true', default=False,
@@ -90,5 +89,3 @@ if __name__ == '__main__':
             print(postprocessing.get_total_count(coin_imgs))
         else:
             print('Input file:', args['input_file'], 'does not exist')
-
-

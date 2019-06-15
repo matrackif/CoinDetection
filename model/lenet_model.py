@@ -1,7 +1,8 @@
 import keras
+from keras.layers import Dense, Conv2D, Flatten, Activation, BatchNormalization, MaxPooling2D
 from keras.models import Sequential
-from keras.layers import Dense, Conv2D, Flatten, Activation, BatchNormalization, Dropout, MaxPooling2D
 from keras.regularizers import l2
+
 import model.base_model as base
 
 
@@ -16,8 +17,8 @@ class LeNetModel(base.BaseModel):
         self.model.add(BatchNormalization())
         self.model.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
         self.model.add(Conv2D(32, (5, 5), strides=(1, 1), padding="valid",
-                             kernel_initializer=init, kernel_regularizer=reg,
-                             activation="tanh"))
+                              kernel_initializer=init, kernel_regularizer=reg,
+                              activation="tanh"))
         self.model.add(BatchNormalization())
         self.model.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
         self.model.add(Flatten())
@@ -28,5 +29,3 @@ class LeNetModel(base.BaseModel):
         self.model.compile(loss=keras.losses.categorical_crossentropy,
                            optimizer=keras.optimizers.SGD(lr=0.01),
                            metrics=['accuracy'])
-
-

@@ -1,11 +1,12 @@
 import cv2
 import numpy as np
+
 import model.coin_image as ci
 
 
 def normalize(x_data: np.ndarray):
     lab = cv2.cvtColor(x_data, cv2.COLOR_BGR2LAB)
-    clahe = cv2.createCLAHE(clipLimit=4.0, tileGridSize=(8,8))
+    clahe = cv2.createCLAHE(clipLimit=4.0, tileGridSize=(8, 8))
     histogram_equalized = clahe.apply(lab[:, :, 0])
     lab[:, :, 0] = histogram_equalized
     x_data = cv2.cvtColor(lab, cv2.COLOR_LAB2BGR)
@@ -31,11 +32,11 @@ def hough_transform(img_file: str, greyscale: bool = False):
     showdebug("Original image", color_img)
     mask = coin_color_mask(color_img)
     showdebug("Merged mask", mask)
-    only_coins = cv2.bitwise_and(color_img,color_img,mask=mask)
+    only_coins = cv2.bitwise_and(color_img, color_img, mask=mask)
 
     contours, hierarchy = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
     coins_with_contours = only_coins.copy()
-    cv2.drawContours(coins_with_contours, contours, -1, (0,0,255), 3)
+    cv2.drawContours(coins_with_contours, contours, -1, (0, 0, 255), 3)
     showdebug("Image after color detection + contours", coins_with_contours)
     cv2.waitKey(0)
 
@@ -64,38 +65,39 @@ def coin_color_mask(img):
     # Detects the yellow and brown colors in coins.
     coin_yellow_mask = cv2.inRange(
         hsv,
-        np.array([int(30/2), int(0.25*255), 0]),
-        np.array([int(60/2), 255, 255]))
+        np.array([int(30 / 2), int(0.25 * 255), 0]),
+        np.array([int(60 / 2), 255, 255]))
 
     # Detects the gray color in coins.
     coin_gray_mask = cv2.inRange(
         hsv,
-        np.array([int(15/2), int(0.45*255), 0]),
-        np.array([int(30/2), 255, 255]))
+        np.array([int(15 / 2), int(0.45 * 255), 0]),
+        np.array([int(30 / 2), 255, 255]))
 
     # Detects the gray color in the ideal coin image.
     coin_ideal_gray_mask = cv2.inRange(
         hsv,
-        np.array([int(45/2), 0, 0]),
-        np.array([int(170/2), 255, 255]))
+        np.array([int(45 / 2), 0, 0]),
+        np.array([int(170 / 2), 255, 255]))
 
     # Detects the almost-white gray color in the ideal coin image.
     coin_ideal_bright_gray_mask = cv2.inRange(
         hsv,
-        np.array([int(20/2), int(0.03*255), 0]),
-        np.array([int(65/2), int(0.05*255), 255]))
+        np.array([int(20 / 2), int(0.03 * 255), 0]),
+        np.array([int(65 / 2), int(0.05 * 255), 255]))
 
     mask = (
-        coin_yellow_mask +
-        coin_gray_mask +
-        coin_ideal_gray_mask +
-        coin_ideal_bright_gray_mask)
+            coin_yellow_mask +
+            coin_gray_mask +
+            coin_ideal_gray_mask +
+            coin_ideal_bright_gray_mask)
 
     # mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, np.ones((3,3),np.uint8))
     # mask = cv2.morphologyEx(mask, cv2.MORPH_DILATE, np.ones((3,3),np.uint8))
     # showdebug("Opened and dilated mask", mask)
 
     return mask
+
 
 def showdebug(description: str, image):
     cv2.imshow(description, cv2.resize(image, (800, 800)))

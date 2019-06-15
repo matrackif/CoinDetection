@@ -1,8 +1,9 @@
 import keras
+from keras.layers import Dense, Conv2D, Flatten, BatchNormalization, Dropout
 from keras.models import Sequential
 from keras.optimizers import Adam
-from keras.layers import Dense, Conv2D, Flatten, Activation, BatchNormalization, Dropout
 from keras.regularizers import l2
+
 import model.base_model as base
 
 

@@ -1,5 +1,7 @@
 import unittest
+
 import model.preprocessing
+
 
 class TestHoughTransform(unittest.TestCase):
 

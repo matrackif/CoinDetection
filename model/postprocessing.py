@@ -1,6 +1,7 @@
-from model.enums import Coin, CoinLabel
-from model.coin_image import CoinImage
 from typing import List
+
+from model.coin_image import CoinImage
+from model.enums import Coin, CoinLabel
 
 TOLERANCE_RATE = 1
 
@@ -26,7 +27,7 @@ def analyse_coin(coin: CoinImage, coins: List[CoinImage]) -> Coin:
     if len(similar_coins) != 0:
         return Coin[similar_coins[0].label.name[:-5]]
     similar_class_coins = unique(list(sorted(filter(lambda x: is_similar_label_coin(coin, x), coins),
-                                                 key=lambda x: x.radius)))
+                                             key=lambda x: x.radius)))
     return get_coin(coin, similar_class_coins)
 
 
@@ -52,15 +53,16 @@ def unique(coins: List[CoinImage]) -> List[CoinImage]:
     return unique_coins
 
 
-def is_unique_coin(coin:CoinImage, unique_coins: List[CoinImage]) -> bool:
+def is_unique_coin(coin: CoinImage, unique_coins: List[CoinImage]) -> bool:
     for unique_coin in unique_coins:
         if unique_coin.radius - TOLERANCE_RATE <= coin.radius <= unique_coin.radius + TOLERANCE_RATE:
             return False
     return True
 
+
 def get_coin(coin: CoinImage, similar_class_coins: List[CoinImage]) -> Coin:
     index = 0
-    for i in range (0, len(similar_class_coins)):
+    for i in range(0, len(similar_class_coins)):
         if (similar_class_coins[i].radius + TOLERANCE_RATE >= coin.radius >=
                 similar_class_coins[i].radius - TOLERANCE_RATE):
             index = i

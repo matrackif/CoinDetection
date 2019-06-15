@@ -1,20 +1,22 @@
-import keras
-import cv2
 import os
-import model.preprocessing as preprocessing
-import model.base_model as base
-import model.lenet_model as lenet
-import model.stridenet_model as stridenet
+from pathlib import Path
+from typing import List
+
+import cv2
+import keras
 import numpy as np
-import model.enums
+from keras.models import load_model
 from matplotlib import pyplot as plt
 from sklearn.model_selection import StratifiedShuffleSplit
 from sklearn.preprocessing import OneHotEncoder
-from keras.models import Sequential, load_model
-from keras.layers import Dense, Conv2D, Flatten, MaxPooling2D, Dropout, Activation, BatchNormalization
-from typing import Tuple, List
+
+import model.base_model as base
+import model.enums
+import model.lenet_model as lenet
+import model.preprocessing as preprocessing
+import model.stridenet_model as stridenet
 from model.coin_image import CoinImage
-from pathlib import Path
+
 NUM_CLASSES = 13
 
 
@@ -36,9 +38,11 @@ class ModelManager:
         self.model = None
 
     def init_training_data(self):
-        dir_names = ['data/1_2_5_gr_tails/output', 'data/1_gr_heads/output', 'data/1_zl_heads/output', 'data/2_gr_heads/output', 'data/2_zl_heads/output',
+        dir_names = ['data/1_2_5_gr_tails/output', 'data/1_gr_heads/output', 'data/1_zl_heads/output',
+                     'data/2_gr_heads/output', 'data/2_zl_heads/output',
                      'data/2_zl_tails/output',
-                     'data/5_gr_heads/output', 'data/5_zl_heads/output', 'data/5_zl_tails/output', 'data/10_20_50_1_tails/output',
+                     'data/5_gr_heads/output', 'data/5_zl_heads/output', 'data/5_zl_tails/output',
+                     'data/10_20_50_1_tails/output',
                      'data/10_gr_heads/output',
                      'data/20_gr_heads/output',
                      'data/50_gr_heads/output']
@@ -61,7 +65,8 @@ class ModelManager:
         enc.fit(y)
         x = np.array(x)
         x = x[:, :, :, np.newaxis] if self.args['greyscale'] else x
-        x = preprocessing.normalize(x)
+        for i in range(len(x)):
+            x[i] = preprocessing.normalize(x[i])
         self.x_tr, self.x_te = None, None
         self.y_tr, self.y_te = None, None
         for train_index, test_index in sss.split(x, y):
@@ -101,7 +106,8 @@ class ModelManager:
                 model_file_name = model_path.name
                 if model_path.is_file():
                     print('Model file:', model_path.name, 'already exists.')
-                    res = input('Overwrite file name? (y/n). If no then model will be saved with name: new_' + model_file_name)
+                    res = input(
+                        'Overwrite file name? (y/n). If no then model will be saved with name: new_' + model_file_name)
                     if res.lower() == 'y' or res.lower() == 'yes':
                         pass
                     else:
@@ -167,9 +173,11 @@ class ModelManager:
                 cv2.imshow('Image of Detected Coin From Hough Transform', coin_images[i].img_arr)
                 cv2.waitKey(0)
             if self.args['greyscale'] and len(coin_images[i].img_arr) != 4:
-                coin_images[i].img_arr = coin_images[i].img_arr.reshape((1, self.args['img_width'], self.args['img_height'], 1))
+                coin_images[i].img_arr = coin_images[i].img_arr.reshape(
+                    (1, self.args['img_width'], self.args['img_height'], 1))
             elif not self.args['greyscale'] and len(coin_images[i].img_arr) != 4:
-                coin_images[i].img_arr = coin_images[i].img_arr.reshape((1, self.args['img_width'], self.args['img_height'], 3))
+                coin_images[i].img_arr = coin_images[i].img_arr.reshape(
+                    (1, self.args['img_width'], self.args['img_height'], 3))
             pred = self.model.predict(coin_images[i].img_arr)
 
             class_indexes = pred.argmax(axis=1)
